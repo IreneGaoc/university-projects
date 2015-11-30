@@ -1,0 +1,30 @@
+CMPUT 274 A2
+
+Project Title: Snake Game Arduino
+
+Team members: Irene(Zihan) Gao and Gaoping Zhou
+
+Description:
+Our group is going to create a Snake Game use one Arduino mega board and one bread board, a pushbutton some leds and some potentiometers and a joysticks.
+The project is aim to play the snake game. a snake's movement can be controlled by
+a joystick. the body of the snake will increase when it eat the food. When it hits the sides of the screen or eats its tail, the game is over.
+our game is going to have three modes. in mode0, when snake eats five times of food, it goes to mode1 and its speed will be increased .When the snake eats five times of food in mode1, it goes to mode2.
+
+Milestones:
+November 16
+the length and width of the screen
+the radius of the food and the length/width of the snake
+the position of the snake at the beginning of the game
+the position of the food display in the game.
+the game start page and game over page
+
+November 23
+clear the movement of the snake 
+create the function of snake eat the ball/hit the screen side/ eat its tail
+create the background of the game and declare the variable
+November 30
+create the restart menu
+construct playthegame function
+finish the main function
+December 2
+README file, Makefile and instruction of how to play the game, try to test and debug
