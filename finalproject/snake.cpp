@@ -14,102 +14,106 @@ referencce:https:Arduino library--
 #include <SD.h>
 #include "lcd_image.h"       // copy corresponding files from the Parrot folder
 
-// ==========standard U of A library settings, assuming Atmel Mega SPI pins=====
+// ==========standard U of A library settings, assuming Atmel Mega SPI pins==================================
 #define SD_CS    5  // Chip select line for SD card
 #define TFT_CS   6  // Chip select line for TFT display
 #define TFT_DC   7  // Data/command line for TFT
 #define TFT_RST  8  // Reset line for TFT (or connect to +5V)
 
-// define tft display (use Adafruit library)
-Adafruit_ST7735 tft = Adafruit_ST7735(TFT_CS, TFT_DC, TFT_RST);
+Adafruit_ST7735 tft = Adafruit_ST7735(TFT_CS, TFT_DC, TFT_RST);// define tft display (use Adafruit library)
 
-// ===================Joystick definations=======================================
+// ===================Joystick definations===================================================================
 #define VERT  0   // Analog input A0 - vertical
 #define HORIZ 1   // Analog input A1 - horizontal
 #define SEL 9  // Digital input pin 9 - select
+//=======================DIRECT=============================================
+#define UP 9
+#define DOWN 7
+#define LEFT 8
+#define RIGHT 6
 
-//=====================LEDs definations==========================================
+//=====================LEDs definations======================================================================
 #define LED_1 2
 #define LED_2 3
 #define LED_3 4
 
-//=====================pushbutton definations====================================
+//=====================pushbutton definations================================================================
 #define PUSH 10 // reset the game button
 
-//==================== Variables=================================================
+//==================== Variables=============================================================================
 const int16_t screen_height = 160;//screen height
 const int16_t screen_width = 128;//screen width
-//int mapgrid[800];
 int select;//joystick button input
 int push;// push button input
 int game_speed1 = 10;
 int game_speed2 = 20;
 
 // socres are representing the pirces of food tha snake eats in each mode
-int score1;
-int score2;
-int score3;
-//====================snake variables=============================================
-int initial_snakelength = 15;
-int snake_body_widith = 6;
-int snake_max_length = 500;
+int score;
+//====================snake variables=========================================================================
+int initial_snakelength = 35;        //snake initial lenth         2015//28
+int snake_body_width = 4;          //snake width                 2015//28
+int snake_max_length = 500;        //snake max length              2015//28
 int snakelength = initial_snakelength;
+int snake_x[300];                 //snake x point
+int snake_y[300];                 //snake y ponit
 int delta_vert;
 int delta_horiz;
 int vertical;
 int horizontal;
+int snake_dir ; //snake head direct
 
-int old_snake_x;// old joystick position
-int old_snake_y;
-
-int snake_x;// joystck position
-int snake_y;
-
-int init_vertical;// initial joystick
+int init_vertical ; // initial joystick
 int init_horizontal;
-//====================food variables==============================================
+//====================food variables=========================================================================
 int foodX;
 int foodY;
-int food_size = 3;
+int food_size = 4;
 
-//===================set up joystick button=======================================
+//===================set up joystick button==================================================================
 void selection_init() {
     // setup the botton at joystick
     pinMode(SEL,INPUT);
     digitalWrite(SEL,HIGH);
+    pinMode(VERT,INPUT);
+    pinMode(HORIZ,INPUT);
 }
-//==================set up LEDs===================================================
+//==================set up LEDs==============================================================================
 void led_init(){
   pinMode(LED_1, OUTPUT);
   pinMode(LED_2, OUTPUT);
   pinMode(LED_3, OUTPUT);
 }
-//=================set up pushbuttons=============================================
+//=================set up pushbuttons=========================================================================
 void push_button_init(){
-  // initialize the pushbutton pin as an input:
+// initialize the pushbutton pin as an input:
  pinMode(PUSH,INPUT);
  digitalWrite(PUSH, HIGH);
 }
-//=================forward declarations===========================================
+//=================forward declarations=======================================================================
 // state the functions in order to have problems like
 //   " xxx is not declared at this scope."
 void start_game_page();
-void game_over();
-void restart();
+void game_over1();
+void game_over2();
+void init_snake_food(); //restart rename init_snake_food()
 void update_Food();
 void update_snake();
 void snake_move();
-void eat_food1();
-void eat_food2();
-void eat_food_final();
-void eat_tail();
-void touch_the_wall();
+int eat_food(int);
+void eat_tail(int );
+void touch_the_wall(int);
 void mode0();
 void mode1();
 void mode2();
 void playthegame();
+int snake_direct(int,int,int,int);
+void move_position(int ) ;
+void eat_position(int);
+void game_over_page1();
+void game_over_page2();
 
-//==================start the game display========================================
+//==================start the game display====================================================================
 void start_game_page(){
   tft.fillScreen(ST7735_BLACK);//make the background black
 
@@ -132,176 +136,368 @@ void start_game_page(){
   tft.println(" Press joystick to start.");
 }
 
-//================game over page==================================================
-void game_over(){
+//================game over page================================================================================
+void game_over_page1(){
+tft.fillScreen(ST7735_BLACK);//make the background black
+
+tft.setTextSize(3);
+tft.setTextColor(ST7735_WHITE);
+tft.setCursor(20,10);
+tft.print("Game  ");
+tft.print(" Over");
+
+tft.setTextSize(1);
+tft.setTextColor(ST7735_YELLOW);
+tft.setCursor(10,60);
+tft.print("your score is: ");
+tft.println(score);
+
+tft.setTextSize(1);
+tft.setTextColor(ST7735_YELLOW);
+tft.setCursor(10,90);
+tft.print("you touched the wall! ");
+
+tft.setTextSize(1);
+tft.setTextColor(ST7735_WHITE);
+tft.setCursor(10,140);
+tft.print("press the restartbutton to restart ");
+}
+
+
+void game_over_page2(){
   tft.fillScreen(ST7735_BLACK);//make the background black
 
   tft.setTextSize(3);
   tft.setTextColor(ST7735_WHITE);
   tft.setCursor(20,10);
-  tft.print("Game Over");
+  tft.print("Game  ");
+  tft.print(" Over");
 
-  tft.setTextSize(4);
+  tft.setTextSize(1);
   tft.setTextColor(ST7735_YELLOW);
-  tft.setCursor(50,10);
+  tft.setCursor(10,60);
   tft.print("your score is: ");
-  tft.println(score1 + score2 +score3);
+  tft.println(score);
+  tft.setTextSize(1);
+  tft.setTextColor(ST7735_YELLOW);
+  tft.setCursor(10,90);
+  tft.print("you ate your tail!  ");
 
-  tft.setTextSize(3);
+  tft.setTextSize(1);
   tft.setTextColor(ST7735_WHITE);
-  tft.setCursor(80,10);
+  tft.setCursor(10,140);
   tft.print("press the restartbutton to restart ");
+}
+//================game over======================================================
+void game_over1(){
 
+  push_button_init();
+
+  game_over_page1();
 
  // pinMode(PUSH,INPUT);  //new
 
   while(true){
-    push = digitalRead(PUSH);
-    if (push == 0){
-      // if the restart button is pressed, go to restart the game
-      restart();
-      playthegame();
-      Serial.print("game restart");
+    game_over_page1();
+    Serial.print("game_over_page");
+    while (true){
+      delay(100);
+      if(digitalRead(PUSH) == 0){// if the restart button is pressed, go to restart the game
+        playthegame();
+        Serial.print("game restart");
+        }
+      }
+      game_over_page1();
+      Serial.print("there is another loop");
     }
    }
-  }
+void game_over2(){
 
-//================reset the game==================================================
-void restart(){
-  // initialize the food pisition
-  foodX = 50;
-  foodY = 50;
+   push_button_init();
+
+   game_over_page2();
+
+  // pinMode(PUSH,INPUT);  //new
+
+ while(true){
+   game_over_page2();
+   Serial.print("game_over_page");
+   while (true){
+     delay(100);
+     if(digitalRead(PUSH) == 0){// if the restart button is pressed, go to restart the game
+       playthegame();
+       Serial.print("game restart");
+      }
+     }
+    game_over_page2();
+    Serial.print("there is another loop");
+  }
+}
+
+
+//================reset the game================================================================================
+void init_snake_food(){
 
   // // initialize the snake position
-  snake_x = 20;
-  snake_y = 20;
-
+  snake_x[0] = 20;            // snake head init x
+  snake_y[0] = 20;            // snake head init y
+  for ( int i=1;i<snakelength ; i++)          //snake baody x,y
+    {
+      snake_x[i]=snake_x[i-1]+1;
+      snake_y[i]=snake_y[i-1];
+    }
+  snake_dir = LEFT ; //initialize LEFT
   // initialize the score
-  score1 = 0;
-  score2 = 0;
-  score3 = 0;
+  score = 0;
+  //get orginal joystick x and y
+  init_vertical = analogRead(VERT);
+  init_horizontal = analogRead(HORIZ);
+
 
 }
 
-//===============update food=====================================================
+//===============update food====================================================================================
 void update_Food() {
-  // the food appers in the screen radomly
-	food_size =3;
-  foodX = random(10,125);
-  foodY = random(10,150);
+  int flag =1 ;
+  while (flag)                   //food posistion not in snake position
+  {
+   foodX = random(10,screen_width);
+   foodY = random(10,screen_height);
+    for (int i = 0; i < snakelength; i++)
+    {
+        if((foodX==snake_x[i])&&(foodY==snake_y[i]))
+        {
+          break;
+        }
+        flag=0;
+    }
+  }
+  Serial.println("FOODX");
+  Serial.println(foodX);
+   Serial.println("FOODY");
+  Serial.println(foodY);
   tft.fillCircle(foodX, foodY,food_size, ST7735_YELLOW);
 }
-//===============update snake=====================================================
+//===============update snake===================================================================================
 void update_snake(){
-   snake_body_widith = 6;
-   tft.fillRect(snake_x,snake_y,snake_body_widith,snakelength, ST7735_GREEN);
+    for (int i = 0; i < snakelength; i++)  //display snake
+    {
+      if(i==0)
+      {
+
+        tft.fillCircle(snake_x[i],snake_y[i],snake_body_width, ST7735_RED);  //snake head
+        Serial.print(snake_x[i]);Serial.print(snake_y[i]);
+      }
+      else
+      {
+        tft.drawCircle(snake_x[i],snake_y[i],snake_body_width, ST7735_GREEN); //snake body
+      Serial.println(snake_x[i]+snake_body_width+1);Serial.println(snake_y[i]+snake_body_width+1);
+      }
+    }
+
    Serial.print("snake_x value is: ");
-   Serial.println(snake_x);
+   Serial.println(snake_x[0]);
    Serial.print("snake_y value is: ");
-   Serial.println(snake_y);
+   Serial.println(snake_y[0]);
    Serial.print("snakelength value is: ");
    Serial.println(snakelength);
 
 
  }
-// TODO:move the snake and make the new cursor replace the old cursor
-//==============update snake's movement===========================================
+ //===============snake move direct=============================================================================
+ int snake_direct(int currentX,int initX,int currentY ,int initY){
+ int DIRECT ;
+ if ( currentX <initX-10){
+    DIRECT = LEFT ;
+    return DIRECT ;
+ }
+ if ( currentX  > initX+10 ){
+    DIRECT = RIGHT ;
+    return DIRECT ;
+ }
+ if (currentY > initY +10){
+     DIRECT = DOWN  ;
+     return DIRECT ;
+ }
+ if (currentY < initY -10){
+     DIRECT = UP  ;
+     return DIRECT ;
+ }
+       return 0 ;
+ }
+
+//==============update snake's movement==========================================================================
 void snake_move(){
 
-snake_body_widith;
+snake_body_width;
 select;
 snake_x, snake_y;
-old_snake_x,old_snake_y;
+
 vertical,horizontal;
-init_vertical,init_horizontal;
+
 delta_vert,delta_horiz;
 
 vertical = analogRead(VERT);
 horizontal = analogRead(HORIZ);
 
-delta_vert = vertical - init_vertical;     // vertical change
-delta_horiz = horizontal - init_horizontal; // horizontal change
 
-// store old position of the tank
-old_snake_x = snake_x;
-old_snake_y = snake_y;
+int direct =snake_direct(horizontal,init_horizontal,vertical,init_vertical);
 
-snake_x = snake_x - delta_horiz / 200;     // left and right movement of cursor
-snake_y = snake_y - delta_vert / 200;     // change of initialVelocity
-touch_the_wall();                       //new
-if ( snake_x != old_snake_x || snake_y != old_snake_y){
+if(direct != 0 ) {
+   switch(direct)
+    {
+      case UP:
+        if(snake_dir!=DOWN)
+        {
+          snake_dir=UP;
+          break;
+        }
+      case DOWN:
+        if(snake_dir!=UP)
+        {
+          snake_dir=DOWN;
+          break;
+        }
+        case LEFT:
+        if(snake_dir!=RIGHT)
+        {
+          snake_dir=LEFT;
+          break;
+        }
+        case RIGHT:
+        if(snake_dir!=LEFT)
+        {
+          snake_dir=RIGHT;
+          break;
+        }
+        default:break;
+    }
+    Serial.println("M");
+    if(eat_food(snake_dir)==1){
+      update_Food();
+      score++;
+    }
+    else {
+       touch_the_wall(snake_dir);
+       eat_tail(snake_dir);
+       move_position(snake_dir);
+    }
+
   update_snake(); // redraw the snake
-}
+  }
 
 }
+//========================snake move position ===================================================================
+void move_position(int DIR){
+  int temp_x[snakelength+2];
+  int temp_y[snakelength+2];
+  for(int i=0;i<snakelength-1;i++)
+  {
+    temp_x[i]=snake_x[i];
+    temp_y[i]=snake_y[i];
+  }
+  switch(DIR)
+  {
+    case RIGHT: {snake_x[0]+=1;break;}
+    case LEFT: {snake_x[0]-=1;break;}
+    case UP: {snake_y[0]-=1;break;}
+    case DOWN: {snake_y[0]+=1;break;}
+  }
+  tft.fillCircle(snake_x[snakelength-1],snake_y[snakelength-1],snake_body_width, ST7735_BLACK); //snake body
+  for(int i=1;i<snakelength;i++)
+  {
+    snake_x[i]=temp_x[i-1];
+    snake_y[i]=temp_y[i-1];
+  }
 
+}
+//============================ eat food position is changed================================================================
+void eat_position(){
+  int temp_x[snakelength+2];
+  int temp_y[snakelength+2];
+  for(int i=0;i<snakelength-1;i++)
+  {
+    temp_x[i]=snake_x[i];
+    temp_y[i]=snake_y[i];
+  }
+  snake_x[0]=foodX;
+  snake_y[0]=foodY;
+  for(int i=1;i<snakelength;i++)
+  {
+    snake_x[i]=temp_x[i-1];
+    snake_y[i]=temp_y[i-1];
+  }
+}
 
 
 // TODO: how to write the this function correctly??
-//===============snake eat the food===============================================
-void eat_food1(){
+//===============snake eat the food==============================================================================
+int eat_food( int dir ){
 
-  while(score1 < 5){
-    update_snake();
-    snake_move();
-  if (snake_x == foodX && snake_y == foodY){
-    snakelength += 3;
+  int x_temp=snake_x[0];
+  int y_temp=snake_y[0];
+  switch(dir)
+  {
+    case UP :y_temp-=1;break;
+    case DOWN :y_temp+=1;break;
+    case LEFT :x_temp-=1;break;
+    case RIGHT :x_temp+=1;break;
+  }
+  if((x_temp==foodX)&&(y_temp==foodY))
+  {
+      snakelength+=3;               //snake body incremnt 3
+      eat_position();
+      return 1;
+  }
+  else
+  {
+    return 0;
+  }
+}
 
-    update_Food();
-    update_snake();
-    snake_move();
-    score1 ++;
+//===============snake eats its tail===============================================================================
+void eat_tail(int dir){
+  int x_temp=snake_x[0];
+  int y_temp=snake_y[0];
+  switch(dir)
+  {
+    case UP :y_temp-=1;break;
+    case DOWN :y_temp+=1;break;
+    case LEFT :x_temp-=1;break;
+    case RIGHT :x_temp+=1;break;
+  }
+  for(int i=1;i<snakelength;i++)
+  {
+    if((snake_x[0]==snake_x[i])&&(snake_y[0]==snake_y[i]))
+    {
+     game_over2();
     }
   }
-  delay(800);// speed
-
-}
- void eat_food2(){
-   for (int score2 = 0; score2 < 5; score2 ++){
-   if (snake_x == foodX && snake_y == foodY){
-     snakelength += 7;
-
-     update_Food();
-     update_snake();
-     snake_move();
-     score2 ++;
-    }
-   }
-   delay(500);// speed
-  }
-
-void eat_food_final(){
-	int snake_max_length;
-  for (int score3 = 0 ; score3 < snake_max_length; score3 ++){
-  if (snake_x == foodX && snake_y == foodY){
-    snakelength += 3;
-
-    update_Food();
-    update_snake();
-    snake_move();
-    score3 ++;
-    }
-  }
-  delay(100);// speed
 }
 
-//===============snake eats its tail=================================================
-void eat_tail(){
-if (snake_x == snake_x && snake_y == snake_y){
-  game_over();
+//==============snake touch the wall==============================================================================
+void  touch_the_wall(int dir){
+   int x_temp=snake_x[0];
+   int y_temp=snake_y[0];
+  switch(dir)
+  {
+    case UP :y_temp-=1;break;
+    case DOWN :y_temp+=1;break;
+    case LEFT :x_temp-=1;break;
+    case RIGHT :x_temp+=1;break;
+  }
+  if(x_temp<1||x_temp>screen_width-1)
+  {
+    Serial.println("DEAD1");
+    game_over1();
+  }
+  if(y_temp<1||y_temp>screen_height-1)
+  {
+  Serial.println("DEAD2");
+  game_over1();
   }
 }
-
-//==============snake touch the wall================================================
-void touch_the_wall(){
-  if ((snake_x < 0) || (snake_x > screen_width)){
-    game_over();
-  }
-if ((snake_y < 0) || (snake_y > screen_height)){
-  game_over();
-  }
-}
-//===============mode0===============================================================
+//===============mode0============================================================================================
 void mode0(){
   pinMode(LED_1,INPUT);
   digitalWrite(LED_1, HIGH);
@@ -310,24 +506,16 @@ void mode0(){
   digitalWrite(LED_2, LOW);
   pinMode(LED_3,INPUT);
   digitalWrite(LED_3, LOW);
-  Serial.println(foodX);
-  Serial.println(foodY);
 
-  foodX = 50;
-  foodY = 50;
-  if (foodX == 50 && foodY == 50){
-    update_Food();
-    eat_food1();
-    eat_tail();
-    touch_the_wall();
-    Serial.print("foodX is right\n");
-	}
-  else{
-    Serial.print("foodX is wrong\n");
+  update_Food();
+  update_snake();
+  while(score<2){
+    snake_move();
+    delay(0);// speed
 
   }
 }
-//==============mode1===============================================================
+//==============mode1============================================================================================
 
 void mode1(){
   pinMode(LED_1,INPUT);
@@ -339,21 +527,19 @@ void mode1(){
   digitalWrite(LED_3, LOW);
   Serial.println(foodX);
   Serial.println(foodY);
-
   foodX = 70;
   foodY = 70;
-  if (foodX == 70 && foodY == 70){
-    update_Food();
-    eat_food2();
-    eat_tail();
-    touch_the_wall();
-    Serial.print("everything is ok!\n");
+
+  update_Food();
+  update_snake();
+   while(score<3){
+    snake_move();
+    delay(20);
+
   }
-  else{
-    Serial.print("some thing is wring\n");
-  }
+
 }
-//===============mode2===============================================================
+//===============mode2==========================================================================================
   void mode2(){
   pinMode(LED_1,INPUT);
   digitalWrite(LED_1, LOW);
@@ -362,44 +548,41 @@ void mode1(){
   pinMode(LED_3,INPUT);
   digitalWrite(LED_3, HIGH);
   delay(200);
-  Serial.println(foodX);
-  Serial.println(foodY);
   foodX = 50;
   foodY = 20;
-  if (foodX == 50 && foodY == 20){
-    update_Food();
-    eat_food_final();
-    eat_tail();
-    touch_the_wall();
-    Serial.print("ok hhh\n");
-  }
-  else{
-    Serial.print("not okay\n");
+
+  Serial.println(foodX);
+  Serial.println(foodY);
+  update_Food();
+  update_snake();
+  while(score>2){
+    snake_move();
+    delay(5);// speed
+
   }
 }
 
-// TODO: how to write this function correctly? how to connect the functions together
-// how to organize the funcitons?
-//===============playthegame==========================================================
+//===============playthegame======================================================================================
 void playthegame(){
   //init();
   //show the main background of the game site
   tft.fillScreen(ST7735_BLACK);
+  init_snake_food();
   // fisrt mode
-  if (score1 == 0){
-    mode0();
-    Serial.print("it's time for mode0");
-    if(score1 == 4){
+  score = 0;
+ update_snake();
+  if (score < 4 ){
+     mode0();
+  }else {
+    if(score > 4 && score<8){
       mode1();
-      Serial.print("it's time for mode1");
-      if (score2 == 4){
+    }else
+     {
         mode2();
-        Serial.print("it's time for mode2");
-      }
+       }
     }
-  }
+
 }
-//==============main===================================================================
 int main(){
 
   init();
@@ -416,27 +599,27 @@ int main(){
     led_init();
     //push_button_init();
     // initialize the food position
-    foodX = 50;
-    foodY = 50;
+    //initialize the food and snake
+    init_snake_food();
 
-    // // initialize the snake position
-    snake_x = 20;
-    snake_y = 20;
 
-    score1 = 0;
-    score2 = 0;
-    score3 = 0;
+    score = 0;
+
+    init_vertical = analogRead(VERT);
+    init_horizontal = analogRead(HORIZ);
 
     snakelength = initial_snakelength;
 
     while(true){
       start_game_page();
-      select = digitalRead(SEL);
       Serial.print("strat game is running ");
       // if the joystick button is pressed
-      if (select == 0){
-        playthegame();
-        Serial.print("game is playing");
+      while (true) {
+        delay(100);
+        if (digitalRead(SEL) == 0){
+          playthegame();
+          Serial.print("game is playing");
+        }
       }
       start_game_page();
       Serial.print("there is a loop");
