@@ -7,10 +7,114 @@
   (https://www.arduino.cc/en/Reference/TFTLibrary)
 */
 
+#include <Arduino.h>
+#include <Adafruit_GFX.h>    // Core graphics library
+#include <Adafruit_ST7735.h> // Hardware-specific library
+#include <SPI.h>
+#include <SD.h>
+#include "lcd_image.h"       // copy corresponding files from the Parrot folder
 
-#include "snake.h"
+// ==========standard U of A library settings, assuming Atmel Mega SPI pins==================================
+#define SD_CS    5  // Chip select line for SD card
+#define TFT_CS   6  // Chip select line for TFT display
+#define TFT_DC   7  // Data/command line for TFT
+#define TFT_RST  8  // Reset line for TFT (or connect to +5V)
+
+Adafruit_ST7735 tft = Adafruit_ST7735(TFT_CS, TFT_DC, TFT_RST);// define tft display (use Adafruit library)
 
 
+//====================food variables=========================================================================
+int food_x[10];                  //food x point
+int food_y[10];                  //food y point
+int foodX;
+int foodY;
+int foodNum = 3 ;         //food numbers
+int food_size = 6;
+//====================block variables=========================================================================
+int block_x[3];                  //food x point
+int block_y[3];                  //food y point
+int blockX;
+int blockY;
+int blockNum = 3 ;         //food numbers
+int block_width = 4;
+int block_length = 90 ;
+
+// ===================Joystick definations===================================================================
+#define VERT  0   // Analog input A0 - vertical
+#define HORIZ 1   // Analog input A1 - horizontal
+#define SEL 9  // Digital input pin 9 - select
+//=======================DIRECT=============================================================================
+#define UP 9
+#define DOWN 7
+#define LEFT 8
+#define RIGHT 6
+
+//=====================LEDs definations======================================================================
+#define LED_1 2
+#define LED_2 3
+#define LED_3 4
+
+//=====================pushbutton definations================================================================
+#define PUSH 10 // reset the game button
+
+//==================== Variables=============================================================================
+const int16_t screen_height = 160;//screen height
+const int16_t screen_width = 120;//screen width
+int select;//joystick button input
+int push;// push button input
+int game_speed1 = 50;
+int game_speed2 = 5;
+int mode ;
+int borderX1=2;
+int borderY1=2;
+int borderX2 = screen_width-2 ;
+int borderY2 = screen_height-3 ;
+// socres are representing the pirces of food tha snake eats in each mode
+int score;
+//====================snake variables=========================================================================
+int initial_snakelength = 50;        //snake initial lenth
+int snake_body_width = 8;          //snake width
+int snake_max_length = 500;        //snake max length
+int snakelength = initial_snakelength;
+int snake_x[300];                 //snake x point
+int snake_y[300];                 //snake y ponit
+int delta_vert;
+int delta_horiz;
+int vertical;
+int horizontal;
+int snake_dir ; //snake head direct
+
+int init_vertical ; // initial joystick
+int init_horizontal;
+//=================forward declarations=======================================================================
+// state the functions in order to have problems like
+//   " xxx is not declared at this scope."
+void start_game_page();
+void game_over();
+void game_over1();
+void game_over2();
+void game_over3();
+void init_snake_food(); //restart rename init_snake_food()
+void update_food( int );
+
+void update_snake();
+int snake_move();
+int eat_food(int);
+int eat_tail(int );
+int touch_the_wall(int);
+int touch_the_block(int);
+int mode1();
+int mode2();
+int mode3();
+int playthegame();
+int snake_direct(int, int, int, int);
+void move_position(int ) ;
+void eat_position(int);
+void game_over_page();
+void game_over_page1();
+void game_over_page2();
+void game_over_page3();
+void game_display();
 
 //===================set up joystick button==================================================================
 void selection_init() {
