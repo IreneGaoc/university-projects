@@ -5,116 +5,13 @@
   referencce:https:Arduino library--
   (//www.arduino.cc/en/Tutorial/JoystickMouseControl)
   (https://www.arduino.cc/en/Reference/TFTLibrary)
+  lecture notes
 */
 
-#include <Arduino.h>
-#include <Adafruit_GFX.h>    // Core graphics library
-#include <Adafruit_ST7735.h> // Hardware-specific library
-#include <SPI.h>
-#include <SD.h>
-#include "lcd_image.h"       // copy corresponding files from the Parrot folder
 
-// ==========standard U of A library settings, assuming Atmel Mega SPI pins==================================
-#define SD_CS    5  // Chip select line for SD card
-#define TFT_CS   6  // Chip select line for TFT display
-#define TFT_DC   7  // Data/command line for TFT
-#define TFT_RST  8  // Reset line for TFT (or connect to +5V)
-
-Adafruit_ST7735 tft = Adafruit_ST7735(TFT_CS, TFT_DC, TFT_RST);// define tft display (use Adafruit library)
+#include "snake.h"
 
 
-//====================food variables=========================================================================
-int food_x[10];                  //food x point
-int food_y[10];                  //food y point
-int foodX;
-int foodY;
-int foodNum = 3 ;         //food numbers
-int food_size = 6;
-//====================block variables=========================================================================
-int block_x[3];                  //food x point
-int block_y[3];                  //food y point
-int blockX;
-int blockY;
-int blockNum = 3 ;         //food numbers
-int block_width = 4;
-int block_length = 90 ;
-
-// ===================Joystick definations===================================================================
-#define VERT  0   // Analog input A0 - vertical
-#define HORIZ 1   // Analog input A1 - horizontal
-#define SEL 9  // Digital input pin 9 - select
-//=======================DIRECT=============================================================================
-#define UP 9
-#define DOWN 7
-#define LEFT 8
-#define RIGHT 6
-
-//=====================LEDs definations======================================================================
-#define LED_1 2
-#define LED_2 3
-#define LED_3 4
-
-//=====================pushbutton definations================================================================
-#define PUSH 10 // reset the game button
-
-//==================== Variables=============================================================================
-const int16_t screen_height = 160;//screen height
-const int16_t screen_width = 120;//screen width
-int select;//joystick button input
-int push;// push button input
-int game_speed1 = 50;
-int game_speed2 = 5;
-int mode ;
-int borderX1=2;
-int borderY1=2;
-int borderX2 = screen_width-2 ;
-int borderY2 = screen_height-3 ;
-// socres are representing the pirces of food tha snake eats in each mode
-int score;
-//====================snake variables=========================================================================
-int initial_snakelength = 50;        //snake initial lenth
-int snake_body_width = 8;          //snake width
-int snake_max_length = 500;        //snake max length
-int snakelength = initial_snakelength;
-int snake_x[300];                 //snake x point
-int snake_y[300];                 //snake y ponit
-int delta_vert;
-int delta_horiz;
-int vertical;
-int horizontal;
-int snake_dir ; //snake head direct
-
-int init_vertical ; // initial joystick
-int init_horizontal;
-//=================forward declarations=======================================================================
-// state the functions in order to have problems like
-//   " xxx is not declared at this scope."
-void start_game_page();
-void game_over();
-void game_over1();
-void game_over2();
-void game_over3();
-void init_snake_food(); //restart rename init_snake_food()
-void update_food( int );
-
-void update_snake();
-int snake_move();
-int eat_food(int);
-int eat_tail(int );
-int touch_the_wall(int);
-int touch_the_block(int);
-int mode1();
-int mode2();
-int mode3();
-int playthegame();
-int snake_direct(int, int, int, int);
-void move_position(int ) ;
-void eat_position(int);
-void game_over_page();
-void game_over_page1();
-void game_over_page2();
-void game_over_page3();
-void game_display();
 
 //===================set up joystick button==================================================================
 void selection_init() {
@@ -294,38 +191,38 @@ void game_over() {
     }
 }
 //================game over============================================================================
-void game_over1() {
+void game_over1() {// for snake touch the wall
 
   push_button_init();
   //score = 0;
 
   game_over_page1();
   delay(800);
-  pinMode(PUSH, INPUT); //new
+  pinMode(PUSH, INPUT);
 
 }
-//================game over============================================================================
-void game_over3() {
 
-  push_button_init();
-  //score = 0;
-
-  game_over_page3();
-  delay(800);
-  pinMode(PUSH, INPUT); //new
-
-}
-void game_over2() {
+void game_over2() {// for snake eats its tail
 
   push_button_init();
   //score = 0;
 
   game_over_page2();
   delay(800);
-  pinMode(PUSH, INPUT); //new
+  pinMode(PUSH, INPUT);
 
 }
 
+void game_over3() {// for snake touch the block
+
+  push_button_init();
+  //score = 0;
+
+  game_over_page3();
+  delay(800);
+  pinMode(PUSH, INPUT);
+
+}
 
 //======== initialize the snake and food position =================================================
 void init_snake_food() {
@@ -334,9 +231,9 @@ void init_snake_food() {
   snake_x[0] = 20;            // snake head init x
   snake_y[0] = 20;            // snake head init y
   snakelength = initial_snakelength;
-  for ( int i = 1; i < snakelength ; i++)     //snake baody x,y
+  for ( int i = 1; i < snakelength ; i++)     //snake body x,y
   {
-    snake_x[i] = snake_x[i - 1] + 1;
+    snake_x[i] = snake_x[i - 1] + 1;// suppose the sanke is in horizontal at the beginning
     snake_y[i] = snake_y[i - 1];
   }
   snake_dir = LEFT ; //initialize LEFT
@@ -362,7 +259,7 @@ void init_snake_food() {
 void update_food(int num) {
 
   int j = 0 ;
-  int flag = 1 ;
+  int flag = 1 ; // the flag of the success/ fail 0==success; 1==fail
 
   while (j < num )                  //food posistion not in snake position
     {
@@ -377,13 +274,13 @@ void update_food(int num) {
 
       flag = 0;
     }
-    for (int i = 0; i < num; i++)      //the random food cannot coninside the pre food
+    for (int i = 0; i < num; i++)      //the random food cannot coninside the previous food
     {
       if ((foodX == food_x[i]) && (foodY == food_y[i]))
       {
         break;
       }
-      if ( flag == 0 ) {
+      if ( flag == 0 ) { //  the food is correct
         food_x[j] = foodX;
         food_y[j] = foodY;
         j++ ;
@@ -420,7 +317,7 @@ void update_block(int num) {
     blockX = random(30, screen_width - 20);
     blockY = random(30, screen_height - 20);
 
-
+    // judge whether the snake touch the BLOCKX
     for (int i = 0 ; i < snakelength; i++)
     {
       if ( (blockY + block_width >= snake_y[i]) && (blockY <= snake_y[i] + snake_body_width) ) //if the coordinate of food and snake is equal
@@ -457,11 +354,11 @@ void update_block(int num) {
       }
       flag1  = 0 ;
     }
-    for (int i = 0; i < num; i++)      //the random food cannot coninside the pre food
+    for (int i = 0; i < num; i++)      //the random food cannot coninside the previous food
     {
 
-      if ( flag == 0 && flag1 ==0) {
-        block_x[j] = blockX;
+      if ( flag == 0 && flag1 ==0) { // if the new block position is not hte same as the food and the snake
+        block_x[j] = blockX;// save to the block array
         block_y[j] = blockY;
         j++ ;
         flag = 1;
@@ -541,8 +438,8 @@ int snake_direct(int initX, int currentX, int initY , int currentY) {
 
 //==============update snake's movement=====================================================================
 
-int snake_move() {
-
+int snake_move() { // judge the movement of the sanke. whether it eats the food, touch the
+                  // wall, touvh the block or eat itself
   snake_body_width;
   select;
   snake_x, snake_y;
@@ -612,7 +509,7 @@ int snake_move() {
 
   }
   else {
-    if (touch_the_block(snake_dir) == 1) //if the snake touch the wall
+    if (touch_the_block(snake_dir) == 1) //if the snake touch the block
          return 3 ;
 
     if (touch_the_wall(snake_dir) == 1) //if the snake touch the wall
@@ -627,30 +524,30 @@ int snake_move() {
   return 0 ;
 }
 //========================snake move position ==========================================
-void move_position(int DIR) {
+void move_position(int DIR) {// according to the sanke's movement, get the new position after each times the snake moves
   int temp_x[snakelength + 2];
   int temp_y[snakelength + 2];
   for (int i = 0; i < snakelength - 1; i++)
   {
-    temp_x[i] = snake_x[i];  //save the old position of snake to the temporary array
-    temp_y[i] = snake_y[i];
+    temp_x[i] = snake_x[i];  //save the old position of snake to the temporary array,and if the snake
+    temp_y[i] = snake_y[i]; // change its position ,re-calculate the value of the position
   }
   switch (DIR)
   { // the movement:
     case RIGHT: {
-        snake_x[0] += 1;
+        snake_x[0] += 1; // x coordinate get larger
         break;
       }
     case LEFT: {
-        snake_x[0] -= 1;
+        snake_x[0] -= 1; // x coordinate get smaller
         break;
       }
     case UP: {
-        snake_y[0] -= 1;
+        snake_y[0] -= 1; // y coordinate get smaller
         break;
       }
     case DOWN: {
-        snake_y[0] += 1;
+        snake_y[0] += 1; // y coordinate get larger
         break;
       }
   }
@@ -676,7 +573,7 @@ void eat_position() {
     temp_y[i] = snake_y[i];
   }
   snake_x[0] = foodX;                //the position of food x willbe given to the
-  snake_y[0] = foodY;               // new ssnake head's position
+  snake_y[0] = foodY;               // new snake head's position
   for (int i = 1; i < snakelength; i++)
   { //give the new snale'sbody position
     snake_x[i] = temp_x[i - 1];
@@ -824,7 +721,7 @@ int mode1() {
   digitalWrite(LED_3, LOW);
   mode = 1 ;
   int rtId = 0;         //return value
-  update_food(1);
+  update_food(1);       //the number of food is only one
   update_snake();
   update_block(mode) ;
   while (score <=2  ) {
