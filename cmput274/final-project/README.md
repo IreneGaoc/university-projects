@@ -52,5 +52,9 @@ make sure you select the right board and port
 Check the procedures are accurate
 Connect the USB cable to the computer and the mega board
 make upload
-follow the instructions on the monitor
+follow the instructions
 finish
+
+Instructions:
+you can click the joystick to enter the game. Also, when the game is over, you can click the joystick to restart. When playing the game, you can push the pushbutton to quit.
+use the joystick to control the movement and eat the food, also, you need to avoid the blocks and be careful do not touch the wall and eat your tail.

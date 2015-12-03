@@ -5,10 +5,12 @@ Project Title: Snake Game Arduino
 Team members: Irene(Zihan) Gao and Gaoping Zhou
 
 Description:
-Our group is going to create a Snake Game use one Arduino mega board and one bread board, a pushbutton some leds and some potentiometers and a joysticks.
-The project is aim to play the snake game. a snake's movement can be controlled by
-a joystick. the body of the snake will increase when it eat the food. When it hits the sides of the screen or eats its tail, the game is over.
-our game is going to have three modes. in mode0, when snake eats five times of food, it goes to mode1 and its speed will be increased .When the snake eats five times of food in mode1, it goes to mode2.
+Our group is going to create a Snake Game use one Arduino mega board and one bread board, a pushbutton some leds and some resistors and a joysticks.
+The project is aim to play the snake game. a snake's movement can be controlled by a joystick. the body of the snake will increase when it eat the food.
+When it hits the sides of the screen or eats its tail, the game is over.
+our game is going to have three modes. in mode1, when snake eats two times of food, it goes to mode2.When the snake eats four times of food in mode2, it goes to mode3.
+Each modes has some blocks to increase the degree of difficulty and with the number of mode increased,the number of blocks increased.
+you can click the joystick to enter the game. Also, when the game is over, you can click the joystick to restart. When playing the game, you can push the pushbutton to quit.
 
 Milestones:
 November 16
@@ -19,12 +21,15 @@ the position of the food display in the game.
 the game start page and game over page
 
 November 23
-clear the movement of the snake 
+clear the movement of the snake
 create the function of snake eat the ball/hit the screen side/ eat its tail
 create the background of the game and declare the variable
+draw the wall and add some blocks
 November 30
 create the restart menu
+write the comment
 construct playthegame function
 finish the main function
+create the h.file, which is included the declarations of the vatiables
 December 2
 README file, Makefile and instruction of how to play the game, try to test and debug
