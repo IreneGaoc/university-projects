@@ -1,6 +1,5 @@
 '''
-name: Zihan(Irene) Gao
-section: cmput275 B2
+
 title: exercise0: first_and_last
 created date: 2016/Jan/09
 purpose:
