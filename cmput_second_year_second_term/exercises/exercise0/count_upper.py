@@ -1,6 +1,5 @@
 '''
-name: Zihan(Irene) Gao
-section: cmput275 B2
+
 title: exercise0: count _upper
 created date: 2016/jan/09
 purpose:
