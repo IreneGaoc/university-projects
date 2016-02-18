@@ -1,0 +1,39 @@
+Irene Gao (1468622)
+Jessica Prieto	(1412737)
+CMPUT275 - Assignment 1 part 1
+(the specific requirement are included in the assignment description)
+references:https://en.wikipedia.org/wiki/Dijkstra%27s_algorithm
+           http://code.activestate.com/recipes/119466-dijkstras-algorithm-for-shortest-paths/
+
+Description:
+This is the part one of a two-part assignment to implement a driving route finder for the Edmonton area.
+For this part we are responsible for programming the server side.
+Together with the main python file that we used for this assignment, server.py,
+we also used graph.py and heap.py that were both implemented in class.
+for the cost_distance function, the formula for the euclidean distance was used to calculate the distance between two vertices.
+Using Dijkstra's algoihm, we were able to implement the least_cost_path function.
+read_city_graph takes the data from "edmonton-roads-2.0.1.txt"
+and stores all the vertices and edges in global variables for other functions to use as well.
+In the data_transfer function, the readcity graph is called to access the given csv file.
+then it waits for the input from the user. Once the user types in a valid input, the start and destination vertices are stored.
+Then it prints the number of waypoints. It then waits for an acknowledgement from the user (by typing 'A' as the input).
+If it's not received, there will be a timeout and the loop will break. Once the acknowledgement is received, the server then prints
+the closest cordinates among the waypoints. next acknowledgement would give the second closest, until all waypoints are exhausted. Once this happens,
+the server will print 'E' that denotes the end of he waypoints.
+Also, I made some changes in the graph.py:Create a graph with a given set of vertices and list of edges.
+If no vertices or edges are given, set them to be empty (an empty graph).
+
+what are included in the zip file:
+
+
+Procedure:
+1.unzip the file
+2.open the terminal
+3.type:server.py(main function)
+4.type:
+R 5365486 -11333915 5364728 -11335891<\n>
+5.type:A
+6.observe the result
+
+Also, I made some changes in graph.py
+if you want to test least_cost_path, just run test.py
