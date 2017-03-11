@@ -253,8 +253,8 @@ def getTweetStats(connection, tweet_id):
 def searchAllFollowers(connection, user_id):
 
 	curs = connection.cursor()
-	curs.prepare("select *  from  follows "
-				"where flwee = :usr ")
+	curs.prepare("select flwer,flwee,start_date,name from follows, users "
+				"where flwee = :usr and usr = flwer")
 	curs.execute(None, {'usr':user_id})
 	rows = curs.fetchall()
 	curs.close()
@@ -577,7 +577,7 @@ def getUserTweets(connection, user_id):
 def displayUserStats(connection, user,user_id):
 
 	stats = getUserStats(connection, user)
-	print("the number of tweets is ",stats[0]," the number of users being followed is ",stats[1],"the number of followers is " ,stats[2])
+	print("the number of tweets is ",stats[0]," the number of users being followed is ",stats[2],"the number of followers is " ,stats[1])
 	rows = getUserTweets(connection,user)
 	inp = ""
 	if len(rows) > 0:
@@ -703,7 +703,7 @@ def displayList(connection, user_id, listName):
 	while (True):
 		inp = input("Type 'add [member]' to add [member] to the list, 'remove [member] to remove [member] from the list, or 'back' to return to the last screen: ")
 		if inp == "back":
-			break
+			break 
 		elif len(inp) > 4 and inp[:4] == "add ":
 			# check that the member exists
 			try:
@@ -719,7 +719,7 @@ def displayList(connection, user_id, listName):
 				curs.execute(None, {'listName':listName, 'member':memberId})
 				row2 = curs.fetchone()
 				curs.close()
-
+ 
 				if not row1:
 					print("The id entered does not correspond to a user, please try again.")
 				elif row2:
@@ -774,7 +774,7 @@ def displayList(connection, user_id, listName):
 				print("Member to remove must be a user id as a number, please try again.")
 		else:
 			print("Unrecognized input, please try again.")
-
+ 
 # Displays all the lists that the user is on
 def displayOnLists(connection, user_id):
 	lists = getOnLists(connection, user_id)
@@ -846,7 +846,7 @@ def main():
 	# There was not a new account created so show the tweets and retweets
 	if not createdAccount:
 		displayTweetsAndRetweets(connection, user_id)
-
+ 
 	# MENU
 	while (True):
 		inp = input("Type 'search tweets' to search tweets, 'search users' to search users, 'compose tweet' to write a tweet, 'list followers' to list your followers, 'manage lists' to see lists, or 'logout' to logout: ")
