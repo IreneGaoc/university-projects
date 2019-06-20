@@ -1,0 +1,8 @@
+1: https://github.com/IreneGaoc
+2: no
+3: 2.21.0
+4: Because we need to use this to run different tasks separately on one computer
+5: 301; add www. before google
+6: 301 this is the one use curl -i or curl -iL; get 418 when I curl http://www.google.com/teapot
+7: 
+8: https://raw.githubusercontent.com/IreneGaoc/CMPUT404Lab1H05/master/main.py

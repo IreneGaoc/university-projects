@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+{% load static %}
+{% load rest_framework %}
+{% csrf_token %}
+
+<link rel="stylesheet" href="{% static 'friendlist.css' %}">
+<STYLE>A {text-decoration: none;} </STYLE>
+<html>
+<body>
+
+<div class="nav" id='sticky'>
+    <a class="title" href="{% url 'home' %}">Natto</a>Natto
+    <nav>
+
+        <form  arial-label="profile picture" accept-charset="UTF-8" method="post">
+            <img src="{% static 'profile.png' %}" class="image-circle">
+        <input type="text" placeholder="Search..">
+        <ul>
+            <li><a href="../../author/{{user_id}}/">Profile</a></li>
+            <li><a href="{% url 'my_posts' %}">My Post</a></li>
+            <li><a href="{% url 'get_post_for_user' %}">Other's Posts</a></li>
+            <li><a href="#">Followers</a></li>
+            <li><a href="#">My photos</a></li>
+            <li><a href="{% url 'friend_requests' %}">Friend Requests</a></li>
+            <li><a id='logout' href="{% url 'logout' %}">LOGOUT</a></li>
+
+        </ul>
+        </form>
+    </nav>
+</div>
+<script>
+window.onscroll = function() {myFunction()};
+// Get the navbar
+var navbar = document.getElementById("nav");
+// Get the offset position of the navbar
+var sticky = navbar.offsetTop;
+// Add the sticky class to the navbar when you reach its scroll position. Remove "sticky" when you leave the scroll position
+function myFunction() {
+  if (window.pageYOffset >= sticky) {
+    navbar.classList.add("sticky")
+  } else {
+    navbar.classList.remove("sticky");
+  }
+}
+</script>
+  const csrf_token = "{{ csrf_token }}";
+  <div class="pro">
+<title>My Friends</title>
+  <div id="holder"></div>
+  <script type="text/javascript">
+  function show_request(data) {
+      var holder = document.getElementById("holder");
+      //alert(data.serializer.length)
+        for (var i = 0; i < data.serializer.length; i++) {
+            //alert('arrive ehre')
+          let friend_block = document.createElement("div");
+          holder.appendChild(friend_block);
+
+          var friend = document.createElement("a");
+          friend.innerHTML = data.serializer[i].displayName;
+          friend.style.fontSize='25px';
+          friend.style.display = "inline-block";
+          friend_block.appendChild(friend);
+          var line = document.createElement("br");
+          friend_block.appendChild(line);
+          var friend_url = document.createElement("a");
+          friend_url.innerHTML = data.serializer[i].url;
+          friend_url.href = data.serializer[i].url;
+          friend_block.appendChild(friend_url);
+          var line = document.createElement("br");
+          var delete_friend = document.createElement("button");
+          delete_friend.innerHTML = 'Delete Friend';
+          var friend_obj_id = data.serializer[i].id;
+          delete_friend.onclick=function(){
+            HandleFriendRequest('/myfriends/views/'+friend_obj_id+'/delete/');
+          };
+          friend_block.appendChild(delete_friend);
+          function HandleFriendRequest(url) {
+            var request = new Request(url, {
+                        method: 'Delete',
+                        headers: {
+                            'X-CSRFToken': '{{ csrf_token }}',
+                             'Content-Type': 'application/json'
+                        },
+                        });
+            return fetch(request).then((response) => {
+              if (response.status === 200) { // OK
+                  alert('here')
+                return response.json(); // return a Promise
+              } else {
+                alert("Something went wrong: " + response.status);
+              }
+            });
+          }
+          var line = document.createElement("hr");
+          friend_block.appendChild(line);
+    }
+  }
+
+  // https://uofa-cmput404.github.io/cmput404-slides/08-AJAX.html#/9
+  // https://developer.mozilla.org/en-US/docs/Web/API/WindowOrWorkerGlobalScope/fetch
+  function fetchJSON(url) {
+    var request = new Request(url, {
+                method: 'GET',
+                headers: {
+                     'Content-Type': 'application/json'
+                },
+                });
+    return fetch(request).then((response) => {
+      if (response.status === 200) { // O
+        return response.json(); // return a Promise
+      } else {
+        alert("Something went wrong: " + response.status);
+      }
+    });
+  }
+
+
+  function get_data_display(url) {
+      fetchJSON(url).then(show_request)
+  }
+
+  get_data_display("{{fetch_url}}");
+
+  </script>
+
+  <button id="home" class="float-left submit-button" >Home</button>
+</div>
+  <script type="text/javascript">
+      document.getElementById("home").onclick = function () {
+          location.href = "{% url 'home' %}";
+      };
+  </script>
+
+</body>
+</html>
